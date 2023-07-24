@@ -159,7 +159,7 @@ func main() {
 	bookCollection = bookDatabase.Collection("Book")
 	myRoute := mux.NewRouter()
 	myRoute.HandleFunc("/book", createBook).Methods("POST")
-	myRoute.HandleFunc("/book", getBooks).Methods("GET")
+	myRoute.HandleFunc("/books", getBooks).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
