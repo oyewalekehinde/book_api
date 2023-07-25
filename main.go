@@ -187,7 +187,7 @@ func main() {
 	bookDatabase = client.Database("Book")
 	bookCollection = bookDatabase.Collection("Book")
 	setupRoutes(app)
-	err = app.Listen(":8000")
+
 	myRoute := mux.NewRouter()
 
 	myRoute.HandleFunc("/book", createBook).Methods("POST")
@@ -195,7 +195,7 @@ func main() {
 	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
-	// log.Fatal(http.ListenAndServe(":8080", myRoute))
+	log.Fatal(app.Listen("0.0.0.0:8000"))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
