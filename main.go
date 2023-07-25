@@ -9,14 +9,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	// "go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var client *mongo.Client
@@ -170,32 +172,37 @@ func main() {
 	app.Use(logger.New())
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 
-	// serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	// opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
-	// client, err = mongo.Connect(context.TODO(), opts)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
+	client, err = mongo.Connect(context.TODO(), opts)
+	if err != nil {
+		panic(err)
+	}
+	// dotenv
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	// Send a ping to confirm a successful connection
-	// if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-	// bookDatabase = client.Database("Book")
-	// bookCollection = bookDatabase.Collection("Book")
+	if err := client.Database("admin").RunCommand(context.TODO(), bson.D{{Key: "ping", Value: 1}}).Err(); err != nil {
+		panic(err)
+	}
+	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	bookDatabase = client.Database("Book")
+	bookCollection = bookDatabase.Collection("Book")
 	setupRoutes(app)
 
 	myRoute := mux.NewRouter()
 
-	myRoute.HandleFunc("/book", createBook).Methods("POST")
-	myRoute.HandleFunc("/books", getBooks).Methods("GET")
-	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
-	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
-	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
-	log.Fatal(app.Listen("0.0.0.0:8080"))
+	s := myRoute.Host(os.Getenv("DOMAIN")).Headers("Connection", "Keep-Alive").Subrouter()
+	s.HandleFunc("/book", createBook).Methods("POST")
+	s.HandleFunc("/books", getBooks).Methods("GET")
+	s.HandleFunc("/book/{id}", getBook).Methods("GET")
+	s.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
+	s.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
+	log.Fatal(http.ListenAndServe(":8080", s))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
