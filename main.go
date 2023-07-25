@@ -1,6 +1,8 @@
 package main
 
 import (
+	model "book_api/models"
+	"book_api/response"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -8,6 +10,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -22,7 +26,7 @@ var bookCollection *mongo.Collection
 
 func createBook(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var createBook Book
+	var createBook model.Book
 	err := json.Unmarshal(reqBody, &createBook)
 
 	if err != nil {
@@ -38,7 +42,7 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Book Successfully Created")
 }
 func getBooks(w http.ResponseWriter, r *http.Request) {
-	var books []Book
+	var books []model.Book
 
 	data, err := bookCollection.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -46,7 +50,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	}
 	defer data.Close(context.TODO())
 	for data.Next(context.TODO()) {
-		var book Book
+		var book model.Book
 
 		if err := data.Decode(&book); err != nil {
 			log.Fatal(err)
@@ -54,7 +58,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 		}
 		books = append(books, book)
 	}
-	response := CustomResponse{
+	response := response.CustomResponse{
 		Status:  true,
 		Message: "Books fetched successfully",
 		Data:    books,
@@ -64,7 +68,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 func getBook(w http.ResponseWriter, r *http.Request) {
-	var book Book
+	var book model.Book
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, _ := primitive.ObjectIDFromHex(idStr)
@@ -78,7 +82,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	response := CustomResponse{
+	response := response.CustomResponse{
 		Status:  true,
 		Message: "Book fetched successfully",
 		Data:    book,
@@ -95,7 +99,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "DataBase Error", http.StatusInternalServerError)
 	}
 	if data.DeletedCount == 0 {
-		response := CustomResponse{
+		response := response.CustomResponse{
 			Status:  false,
 			Message: "Book Not Found",
 			Data:    nil,
@@ -105,7 +109,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := CustomResponse{
+	response := response.CustomResponse{
 		Status:  true,
 		Message: "Books deleted successfully",
 		Data:    nil,
@@ -118,7 +122,7 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	var updateBookProps Book
+	var updateBookProps model.Book
 	err := json.Unmarshal(reqBody, &updateBookProps)
 	if err != nil {
 		fmt.Fprint(w, "Something went wrong")
@@ -139,8 +143,33 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+func setupRoutes(app *fiber.App) {
+	// give response when at /
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": true,
+			"message": "You are at the endpoint 😉",
+		})
+	})
+
+	// api group
+	api := app.Group("/api")
+
+	// give response when at /api
+	api.Get("", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"success": true,
+			"message": "You are at the api endpoint 😉",
+		})
+	})
+
+}
 func main() {
+
+	app := fiber.New()
+	app.Use(logger.New())
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
+
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
 
@@ -157,13 +186,16 @@ func main() {
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 	bookDatabase = client.Database("Book")
 	bookCollection = bookDatabase.Collection("Book")
+	setupRoutes(app)
+	err = app.Listen(":8000")
 	myRoute := mux.NewRouter()
+
 	myRoute.HandleFunc("/book", createBook).Methods("POST")
 	myRoute.HandleFunc("/books", getBooks).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
-	log.Fatal(http.ListenAndServe(":8080", myRoute))
+	// log.Fatal(http.ListenAndServe(":8080", myRoute))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
