@@ -202,6 +202,7 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
+	fmt.Println(port)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, myRoute))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
