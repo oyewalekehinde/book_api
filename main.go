@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -196,7 +197,12 @@ func main() {
 	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
-	log.Fatal(http.ListenAndServe("0.0.0.0:8080", myRoute))
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, myRoute))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
