@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -196,13 +195,12 @@ func main() {
 
 	myRoute := mux.NewRouter()
 
-	s := myRoute.Host(os.Getenv("DOMAIN")).Headers("Connection", "Keep-Alive").Subrouter()
-	s.HandleFunc("/book", createBook).Methods("POST")
-	s.HandleFunc("/books", getBooks).Methods("GET")
-	s.HandleFunc("/book/{id}", getBook).Methods("GET")
-	s.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
-	s.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
-	log.Fatal(http.ListenAndServe(":8080", s))
+	myRoute.HandleFunc("/book", createBook).Methods("POST")
+	myRoute.HandleFunc("/books", getBooks).Methods("GET")
+	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
+	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
+	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", myRoute))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
 			panic(err)
