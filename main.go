@@ -11,8 +11,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -103,7 +101,6 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		response := response.CustomResponse{
 			Status:  false,
 			Message: "Book Not Found",
-			Data:    nil,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
@@ -112,8 +109,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 
 	response := response.CustomResponse{
 		Status:  true,
-		Message: "Books deleted successfully",
-		Data:    nil,
+		Message: "Book deleted successfully",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -144,35 +140,12 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-func setupRoutes(app *fiber.App) {
-	// give response when at /
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"success": true,
-			"message": "You are at the endpoint 😉",
-		})
-	})
-
-	// api group
-	api := app.Group("/api")
-
-	// give response when at /api
-	api.Get("", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"success": true,
-			"message": "You are at the api endpoint 😉",
-		})
-	})
-
-}
 func main() {
 
-	app := fiber.New()
-	app.Use(logger.New())
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(os.Getenv("MONGODB")).SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
 	client, err = mongo.Connect(context.TODO(), opts)
@@ -188,7 +161,6 @@ func main() {
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 	bookDatabase = client.Database("Book")
 	bookCollection = bookDatabase.Collection("Book")
-	setupRoutes(app)
 
 	myRoute := mux.NewRouter()
 
