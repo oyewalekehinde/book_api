@@ -1,4 +1,4 @@
-package response
+package model
 
 type CustomResponse struct {
 	Status  bool        `json:"status"`

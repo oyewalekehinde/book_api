@@ -2,7 +2,6 @@ package main
 
 import (
 	model "book_api/models"
-	"book_api/response"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -57,7 +56,7 @@ func getBooks(w http.ResponseWriter, r *http.Request) {
 		}
 		books = append(books, book)
 	}
-	response := response.CustomResponse{
+	response := model.CustomResponse{
 		Status:  true,
 		Message: "Books fetched successfully",
 		Data:    books,
@@ -81,7 +80,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	response := response.CustomResponse{
+	response := model.CustomResponse{
 		Status:  true,
 		Message: "Book fetched successfully",
 		Data:    book,
@@ -98,7 +97,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "DataBase Error", http.StatusInternalServerError)
 	}
 	if data.DeletedCount == 0 {
-		response := response.CustomResponse{
+		response := model.CustomResponse{
 			Status:  false,
 			Message: "Book Not Found",
 		}
@@ -107,7 +106,7 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := response.CustomResponse{
+	response := model.CustomResponse{
 		Status:  true,
 		Message: "Book deleted successfully",
 	}
