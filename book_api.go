@@ -9,10 +9,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var client *mongo.Client
@@ -67,7 +66,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	var book Book
 	vars := mux.Vars(r)
 	idStr := vars["id"]
-	id, _ := primitive.ObjectIDFromHex(idStr)
+	id, _ := bson.ObjectIDFromHex(idStr)
 	data := bookCollection.FindOne(context.TODO(), bson.M{"_id": id})
 	if err != nil {
 		log.Fatal(err)
@@ -89,7 +88,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 func deleteBook(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
-	id, _ := primitive.ObjectIDFromHex(idStr)
+	id, _ := bson.ObjectIDFromHex(idStr)
 	data, err := bookCollection.DeleteOne(context.TODO(), bson.M{"_id": id})
 	if err != nil {
 		http.Error(w, "DataBase Error", http.StatusInternalServerError)
@@ -124,7 +123,7 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Something went wrong")
 		return
 	}
-	id, _ := primitive.ObjectIDFromHex(idStr)
+	id, _ := bson.ObjectIDFromHex(idStr)
 	data, err := bookCollection.UpdateOne(context.TODO(), bson.M{"_id": id}, bson.D{
 		{Key: "$set", Value: updateBookProps},
 	})
@@ -145,7 +144,7 @@ func main() {
 	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?appName=Cluster0").SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
-	client, err = mongo.Connect(context.TODO(), opts)
+	client, err = mongo.Connect(opts)
 	if err != nil {
 		panic(err)
 	}
