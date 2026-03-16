@@ -39,7 +39,7 @@ func initMongo() error {
 	initOnce.Do(func() {
 		serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 
-		uri := os.Getenv("MONGODB_URI")
+		uri := os.Getenv("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/")
 		opts := options.Client().
 			ApplyURI(uri).
 			SetServerAPIOptions(serverAPI)
