@@ -37,7 +37,7 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(bookResult.InsertedID)
 	fmt.Fprint(w, "Book Successfully Created")
 }
-func getBooks(w http.ResponseWriter, r *http.Request) {
+func getBooks(w http.ResponseWriter, _ *http.Request) {
 	var books []Book
 
 	data, err := bookCollection.Find(context.TODO(), bson.M{})
@@ -142,7 +142,7 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?retryWrites=true&w=majority").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?appName=Cluster0").SetServerAPIOptions(serverAPI)
 
 	// Create a new client and connect to the server
 	client, err = mongo.Connect(context.TODO(), opts)
@@ -159,7 +159,7 @@ func main() {
 	bookCollection = bookDatabase.Collection("Book")
 	myRoute := mux.NewRouter()
 	myRoute.HandleFunc("/book", createBook).Methods("POST")
-	myRoute.HandleFunc("/book", getBooks).Methods("GET")
+	myRoute.HandleFunc("/books", getBooks).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/book/{id}", updateBook).Methods("PATCH")
