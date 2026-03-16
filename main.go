@@ -157,11 +157,11 @@ func main() {
 	bookDatabase = client.Database("Book")
 	bookCollection = bookDatabase.Collection("Book")
 	myRoute := mux.NewRouter()
-	myRoute.HandleFunc("api/v1/book", createBook).Methods("POST")
-	myRoute.HandleFunc("api/v1/books", getBooks).Methods("GET")
-	myRoute.HandleFunc("api/v1/book/{id}", getBook).Methods("GET")
-	myRoute.HandleFunc("api/v1/book/{id}", deleteBook).Methods("DELETE")
-	myRoute.HandleFunc("api/v1/book/{id}", updateBook).Methods("PATCH")
+	myRoute.HandleFunc("/api/v1/book", createBook).Methods("POST")
+	myRoute.HandleFunc("/api/v1/books", getBooks).Methods("GET")
+	myRoute.HandleFunc("/api/v1/book/{id}", getBook).Methods("GET")
+	myRoute.HandleFunc("/api/v1/book/{id}", deleteBook).Methods("DELETE")
+	myRoute.HandleFunc("/api/v1/book/{id}", updateBook).Methods("PATCH")
 	log.Fatal(http.ListenAndServe(":8080", myRoute))
 	defer func() {
 		if err = client.Disconnect(context.TODO()); err != nil {
