@@ -138,7 +138,23 @@ func updateBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-func main() {
+
+// func Handler(w http.ResponseWriter, r *http.Request) {
+// 	if err := initMongo(); err != nil {
+// 		http.Error(w, "failed to connect to database", http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	router := mux.NewRouter()
+// 	router.HandleFunc("/api/v1/book", createBook).Methods("POST")
+// 	router.HandleFunc("/api/v1/books", getBooks).Methods("GET")
+// 	router.HandleFunc("/api/v1/book/{id}", getBook).Methods("GET")
+// 	router.HandleFunc("/api/v1/book/{id}", deleteBook).Methods("DELETE")
+// 	router.HandleFunc("/api/v1/book/{id}", updateBook).Methods("PATCH")
+
+//		router.ServeHTTP(w, r)
+//	}
+func Handler(w http.ResponseWriter, r *http.Request) {
 	// Use the SetServerAPIOptions() method to set the Stable API version to 1
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI("mongodb+srv://oyewalekehinde:Iam23yearsold@cluster0.cx7fyoz.mongodb.net/?appName=Cluster0").SetServerAPIOptions(serverAPI)
@@ -162,11 +178,11 @@ func main() {
 	myRoute.HandleFunc("/api/v1/book/{id}", getBook).Methods("GET")
 	myRoute.HandleFunc("/api/v1/book/{id}", deleteBook).Methods("DELETE")
 	myRoute.HandleFunc("/api/v1/book/{id}", updateBook).Methods("PATCH")
-	log.Fatal(http.ListenAndServe(":8080", myRoute))
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			panic(err)
-		}
-	}()
+	myRoute.ServeHTTP(w, r)
+	// defer func() {
+	// 	if err = client.Disconnect(context.TODO()); err != nil {
+	// 		panic(err)
+	// 	}
+	// }()
 
 }
